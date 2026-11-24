@@ -44,3 +44,114 @@ footer{position:absolute;bottom:0;left:0;right:0;padding:7px 10px;z-index:4;text
 }
 #maplibre-view .maplibregl-ctrl-attrib a{color:#b5e6ff!important}
 #maplibre-view .maplibregl-ctrl-attrib-button{background-color:#bedaff!important;border-radius:50%}
+
+/* Life Around Us original-style display: no permanent left-hand mode menu.
+   Reuse the smoked header, quiet logo/gear, postcard weather, and lower feed
+   visual vocabulary from the original Life experience. */
+.life-clinic{position:absolute;z-index:8;top:2.7vh;left:2.3vw;display:flex;gap:11px;align-items:center;padding:9px 56px 9px 9px;background:linear-gradient(90deg,rgba(0,0,0,.56),rgba(0,0,0,.22) 66%,transparent);border-radius:40px 0 0 40px;text-shadow:0 2px 5px #000b;pointer-events:none}
+.life-clinic .clinic-mark{width:45px;height:45px;display:grid;place-items:center;border-radius:50%;border:2px solid #f0f5faed;color:white;font:600 25px "Segoe UI",sans-serif}
+.life-clinic .clinic-name{font:600 21px "Segoe UI",sans-serif}
+.life-clinic .clinic-welcome{margin-top:3px;color:#d3e1e7c9;font-size:13px}
+.life-brand{position:absolute;right:74px;top:3.4vh;z-index:7;pointer-events:none;opacity:.95}
+.life-brand img{display:block;height:40px;max-width:230px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 7px #0009)}
+.life-gear{position:absolute;right:2.5vw;top:3.5vh;z-index:9;width:40px;height:40px;background:transparent;border:0;padding:7px;border-radius:50%;opacity:.7;transition:opacity .2s,transform .2s}
+.life-gear svg{width:100%;height:100%;fill:#e3f2fc;filter:drop-shadow(0 2px 4px #0009)}
+.life-gear:hover{opacity:1;transform:rotate(25deg)}
+.life-city-card{position:absolute;left:3vw;bottom:19vh;z-index:7;width:min(340px,37vw);background:rgba(245,247,245,.95);color:#1d323a;border-radius:20px;overflow:hidden;box-shadow:0 18px 55px #0009;transition:opacity .25s;backdrop-filter:blur(10px)}
+.life-city-card .card-band{height:7px;background:linear-gradient(90deg,#218c99,#9fd2cf 60%,#dcc58e)}
+.life-city-card .card-body{padding:16px 20px 17px}
+.life-city-card .country{color:#2b8393;text-transform:uppercase;letter-spacing:.13em;font-weight:700;font-size:10px}
+.life-city-card .city{margin:5px 0 11px;font-family:"Segoe UI",system-ui,sans-serif;font-weight:600;font-size:clamp(22px,3.2vw,40px);line-height:1.08;overflow-wrap:anywhere}
+.life-city-card .time-row{display:flex;align-items:baseline;gap:7px}
+.life-city-card .time{font-size:clamp(31px,4.2vw,49px);font-weight:300;line-height:1.1;font-variant-numeric:tabular-nums}
+.life-city-card .ampm{font-size:15px;color:#58757c}
+.life-city-card .date{font-size:13px;margin-top:1px;color:#657d84}
+.life-city-card .divider{height:1px;background:#35627636;margin:10px 0 9px}
+.life-city-card .weather{display:flex;align-items:center;gap:9px;min-height:46px}
+.life-city-card .wx-icon svg{width:45px;height:45px}
+.life-city-card .wx-temp{font-size:30px;font-weight:500;white-space:nowrap}
+.life-city-card .wx-text{font-size:12px;color:#3a5860}
+.life-city-card .weather-meta{font-size:10px;line-height:1.45;color:#587178;margin-top:5px}
+.life-city-card .weather-days{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #24455a2b;margin-top:12px;padding-top:10px}
+.life-city-card .weather-days>div{display:flex;align-items:center;flex-direction:column;gap:4px;font-size:11px;min-width:31%}
+.life-city-card .weather-days span{font-weight:700;color:#4d7680;font-size:9px;letter-spacing:.5px}
+.life-city-card .weather-days b{color:#253f4b;font-size:13px}
+.life-city-card .weather-days small{color:#59737f}
+.wx-icon .sun circle{fill:#f4c56a}.wx-icon .sun .rays line{stroke:#f4c56a;stroke-width:3;stroke-linecap:round}
+.wx-icon .moon{fill:#c9d3e6}.wx-icon .cloud{fill:#edf3f6;stroke:#a9bcc6;stroke-width:2}
+.wx-icon .cloud.back{fill:#dbe4ea}.wx-icon .drops line{stroke:#6fa8cf;stroke-width:3}
+.wx-icon .flakes circle{fill:#9ec3db}.wx-icon .bolt{fill:#f1b25b}
+.wx-icon .fog line{stroke:#a9bcc6;stroke-width:4}
+.city-tour{position:absolute;left:3.5vw;bottom:14.5vh;z-index:7;display:flex;align-items:center;gap:10px;font:600 11px "Segoe UI",sans-serif;color:#e2f1ff;text-shadow:0 2px 8px #000}
+.city-tour button{background:rgba(0,15,31,.38);border:1px solid #d7e7f46b;border-radius:50%;height:28px;width:28px;font-size:21px;display:grid;place-items:center;line-height:1}
+.life-news-strip{position:absolute;z-index:5;left:0;right:0;bottom:0;height:31vh;display:flex;gap:25px;align-items:end;padding:12vh 3vw 5vh;background:radial-gradient(110% 140% at 30% 100%,#000c,transparent 77%),linear-gradient(to top,#000b,transparent 88%);pointer-events:none}
+.life-news-strip .news-photo{width:min(19vw,158px);height:clamp(55px,10vh,118px);display:grid;place-items:center;flex-shrink:0;background:#3755713a;border:1px solid #aecbdf38}
+.life-news-strip .news-photo img{width:60%;max-height:80%;object-fit:contain;opacity:.75}
+.life-news-strip .news-lines{display:flex;flex-direction:column;gap:10px;min-width:0;padding-bottom:3px}
+.life-news-strip .news-item{display:flex;align-items:center;gap:12px;color:#eef5f4;font:400 clamp(12px,1.15vw,18px) "Segoe UI",sans-serif;white-space:nowrap;text-shadow:0 2px 5px #000e}
+.life-news-strip .news-item>span:last-child{overflow:hidden;text-overflow:ellipsis}
+.news-dot{width:7px;height:7px;flex:0 0 7px;transform:rotate(45deg);background:#b7dcea;box-shadow:0 0 8px #a5e4ff}
+.life-controls{position:absolute;right:2.5vw;bottom:15vh;z-index:7;display:grid;grid-template-columns:50px 50px;gap:4px}
+.life-controls button{font:500 13px "Segoe UI",sans-serif;min-height:35px;background:#132a42b3;color:#e9f7fc;border:1px solid #bcdffb56;border-radius:7px;padding:7px}
+.life-controls #zoom-in,.life-controls #zoom-out{font-size:21px}
+.life-controls #reset,.life-controls #explore{grid-column:1/3;font-size:11px;letter-spacing:.07em}
+.life-controls button:hover{background:#316280b5}
+.life-coordinates,.life-distance,.life-fps{position:absolute;z-index:6;color:#b8cedeaa;font-size:10px;text-shadow:0 2px 5px #000}
+.life-coordinates{left:3vw;bottom:5vh}.life-distance{left:3vw;bottom:3.2vh}.life-fps{right:3vw;bottom:3.2vh}
+#credits{z-index:6;font:10px "Segoe UI",sans-serif;background:none;color:#b3c3cbbf;text-align:right;right:2.5vw;left:auto;width:auto;max-width:40vw}
+#credits a{color:#a1d7e8}
+.settings{z-index:15;top:10vh;bottom:6vh;background:linear-gradient(90deg,#09182feb,#061328f2);border:1px solid #e6f8ff38;box-shadow:0 22px 65px #000d;width:min(460px,calc(100vw - 20px))}
+.settings label{font:600 14px "Segoe UI",sans-serif}
+.settings h2{font:600 17px "Segoe UI",sans-serif}
+.settings .location-setting{border-block:1px solid #bbdcf732;padding-block:15px;margin:20px 0}
+.settings input[type=text]{display:block;width:100%;padding:12px;background:#081c32;color:#f1faff;border:1px solid #4b7797;border-radius:8px;font-size:13px}
+.settings button.action{margin:5px 4px 5px 0}
+.settings .secondary-action{background:transparent}
+.settings select{font-size:13px}
+#google-choice{padding-left:9px;border-left:2px solid #9dd7fa6b;margin:12px 0}
+.life-home-beacon{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;color:#d8f8ff;text-shadow:0 1px 5px #012342;font:800 11px "Segoe UI",sans-serif;letter-spacing:1px;filter:drop-shadow(0 0 6px #24b5ff)}
+.life-home-beacon .beacon-pulse,.blue-map-beacon{display:block;width:17px;height:17px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#fff 0%,#9eeeff 22%,#06b7ff 50%,#034fff 100%);border:2px solid #e6faff;box-shadow:0 0 10px 3px #13bbff,0 0 24px 7px #007bff,0 0 47px 16px #007aff85;animation:life-blue-beacon 1.65s ease-in-out infinite}
+.life-home-beacon #beacon-label{margin-top:10px;background:#062342cc;padding:3px 7px;border-radius:5px}
+.blue-map-beacon{height:19px;width:19px;cursor:pointer}
+@keyframes life-blue-beacon{0%,100%{transform:scale(.75);opacity:.65;box-shadow:0 0 5px 1px #00aeff,0 0 18px 4px #005aff}50%{transform:scale(1.35);opacity:1;box-shadow:0 0 13px 5px #59ddff,0 0 42px 14px #056eff,0 0 75px 24px #0575ff90}}
+/* One Earth view means the layer controls never create a separate Earth card.
+   The globe and detail renderer occupy the same viewport and location. */
+.viewport{transition:opacity .32s ease}
+#maplibre-view .maplibregl-ctrl-attrib{font:11px "Segoe UI",sans-serif}
+@media(max-width:720px){
+ .life-clinic{top:14px;left:8px;padding:6px 30px 6px 7px}
+ .life-clinic .clinic-mark{width:35px;height:35px;font-size:19px}
+ .life-clinic .clinic-name{font-size:14px}
+ .life-clinic .clinic-welcome{font-size:10px}
+ .life-brand{top:17px;right:51px}.life-brand img{height:29px;max-width:91px}
+ .life-gear{right:9px;top:15px;width:32px;height:32px;padding:5px}
+ .life-city-card{left:12px;bottom:20vh;width:min(255px,65vw);border-radius:14px}
+ .life-city-card .card-band{height:5px}
+ .life-city-card .card-body{padding:11px 12px}
+ .life-city-card .country{font-size:8px}
+ .life-city-card .city{font-size:25px;line-height:1.05}
+ .life-city-card .time{font-size:29px}.life-city-card .ampm{font-size:11px}.life-city-card .date{font-size:10px}
+ .life-city-card .divider{margin:7px 0}.life-city-card .wx-icon svg{width:31px;height:31px}
+ .life-city-card .wx-temp{font-size:22px}.life-city-card .wx-text{font-size:10px}
+ .life-city-card .weather-meta{font-size:9px}
+ .life-city-card .weather-days{margin-top:6px;padding-top:6px}
+ .life-city-card .weather-days b{font-size:11px}
+ .city-tour{bottom:16.5vh;left:15px;font-size:9px}
+ .city-tour button{height:25px;width:25px}
+ .life-news-strip{height:18vh;padding:3vh 12px 4vh;gap:9px}
+ .life-news-strip .news-photo{width:51px;height:52px}
+ .life-news-strip .news-lines{gap:5px}
+ .life-news-strip .news-item{font-size:9px;gap:5px}
+ .life-news-strip .news-dot{width:5px;height:5px;flex-basis:5px}
+ .life-controls{right:12px;bottom:21vh;grid-template-columns:31px 31px;gap:3px}
+ .life-controls button{padding:5px;min-height:30px;font-size:9px}
+ .life-controls #reset,.life-controls #explore{font-size:8px}
+ .life-coordinates,.life-distance{display:none}.life-fps{right:12px;bottom:4vh;font-size:9px}
+ #credits{left:15vw;right:5px;bottom:0;max-width:none;font-size:8px}
+ .settings{top:67px;left:8px;right:8px;bottom:24px;width:auto}
+}
+@media(prefers-reduced-motion:reduce){.life-home-beacon .beacon-pulse,.blue-map-beacon{animation:none}.viewport{transition:none}}
+
+/* Cross-fade levels of the single integrated Earth viewport. */
+.viewport{display:block;opacity:1;visibility:visible;pointer-events:auto;transition:opacity .35s ease,visibility .35s ease}
+.viewport.hidden{display:block;opacity:0;visibility:hidden;pointer-events:none}

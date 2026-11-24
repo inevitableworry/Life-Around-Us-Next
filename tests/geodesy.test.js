@@ -20,3 +20,10 @@ test('Geographic longitude normalization and invalid input',()=>{
  assert.equal(normalizeLongitude(-190),170);
  assert.throws(()=>globePointCoordinates({x:0,y:0,z:0}),RangeError);
 });
+
+test('NASA texture cardinal orientation matches sphere geometry',()=>{
+ const eq=spherePoint(0,0),east=spherePoint(0,90),west=spherePoint(0,-90);
+ assert.ok(eq.x>0.9999&&Math.abs(eq.z)<1e-9);
+ assert.ok(east.z<-.9999);
+ assert.ok(west.z>.9999);
+});

@@ -2,13 +2,18 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import './style.css';
 import {spherePoint,globePointCoordinates,normalizeLongitude} from './geodesy.js';
+import {CITIES} from './cities.js';
+import {updateCityWeather,setTemperatureUnit,getTemperatureUnit,setWeatherVisible,getWeatherVisible} from './live-weather.js';
+
 
 const $ = (id) => document.getElementById(id);
-const MODE = { classic: 'classic', enhanced: 'enhanced', maplibre: 'maplibre', google3d: 'google3d', maps: 'maps' };
+const PROVIDERS=['classic','enhanced','maplibre','google3d','maps'];
 const RADIUS = 2.2;
 let current = 'classic', previous = 'classic';
+let currentProvider='classic', home=null, cityIndex=0, weatherTimer=null, lastGeocode=0;
 let currentGoogleKey = '';
 let selected = {lat: 0, lon: 0};
+let currentCityName='Planet Earth';
 let googleViewer = null, googleMap = null, googleScript = null, mapsScript = null;
 let freeMap = null, freeMapImport = null, freeMapMarker = null;
 const freeMapStyles = Object.freeze({liberty:'https://tiles.openfreemap.org/styles/liberty',dark:'https://tiles.openfreemap.org/styles/dark',positron:'https://tiles.openfreemap.org/styles/positron'});
@@ -27,10 +32,19 @@ function notice(message) {
 $('notice').addEventListener('click', () => { $('notice').hidden = true; });
 const rad = (a) => a * Math.PI / 180;
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-function updateCoordinates(lat, lon) {
-  selected = {lat: clamp(lat, -85, 85), lon: normalizeLongitude(lon)};
-  $('coordinates').textContent = selected.lat.toFixed(4) + '°, ' + selected.lon.toFixed(4) + '°';
-  $('location-name').textContent = Math.abs(selected.lat) < 0.001 && Math.abs(selected.lon) < 0.001 ? 'PLANET EARTH' : 'SELECTED LOCATION';
+function updateCoordinates(lat, lon, name) {
+  if(!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lon))) return;
+  selected = {lat: clamp(Number(lat), -85, 85), lon: normalizeLongitude(Number(lon))};
+  $('coordinates').textContent = selected.lat.toFixed(4) + '\u00b0, ' + selected.lon.toFixed(4) + '\u00b0';
+  const nearest=CITIES.reduce((a,b)=>{
+    const d=Math.hypot((b.lat-selected.lat), (b.lon-selected.lon)*Math.cos(selected.lat*Math.PI/180));
+    return d<a.distance?{city:b,distance:d}:a;
+  },{city:null,distance:Infinity});
+  const known=nearest.distance<1.5?nearest.city:null;
+  currentCityName=name || known?.name || 'Selected location';
+  $('city-country').textContent=known?.country?.toUpperCase() || 'LIVE EARTH WEATHER';
+  clearTimeout(weatherTimer);
+  weatherTimer=setTimeout(()=>updateCityWeather(selected.lat,selected.lon,currentCityName),360);
 }
 
 // Real-time rendering in visitor's browser; no DLSS claims or server GPU.
@@ -69,6 +83,29 @@ const material = new THREE.MeshStandardMaterial({
 });
 const earth = new THREE.Mesh(earthGeometry, material);
 scene.add(earth);
+// Unified globe: location lights and home beacon are anchored to geographic coordinates.
+const lightGeo=new THREE.BufferGeometry();
+const lightCoords=[];
+for(const city of CITIES){
+ const v=spherePoint(city.lat,city.lon,RADIUS*1.007);
+ lightCoords.push(v.x,v.y,v.z);
+}
+lightGeo.setAttribute('position',new THREE.Float32BufferAttribute(lightCoords,3));
+const dotCanvas=document.createElement('canvas');dotCanvas.width=32;dotCanvas.height=32;
+const dotContext=dotCanvas.getContext('2d');
+const dotGlow=dotContext.createRadialGradient(16,16,0,16,16,16);
+dotGlow.addColorStop(0,'rgba(255,255,255,1)');
+dotGlow.addColorStop(0.19,'rgba(157,232,255,.95)');
+dotGlow.addColorStop(.5,'rgba(97,182,255,.34)');
+dotGlow.addColorStop(1,'rgba(80,153,255,0)');
+dotContext.fillStyle=dotGlow;dotContext.fillRect(0,0,32,32);
+const citiesGlow=new THREE.Points(lightGeo,new THREE.PointsMaterial({
+ color:0xc4eaff,size:7,sizeAttenuation:false,map:new THREE.CanvasTexture(dotCanvas),
+ transparent:true,alphaTest:.02,opacity:.75,depthWrite:false,
+ blending:THREE.AdditiveBlending
+}));
+scene.add(citiesGlow);
+
 const textureLoader = new THREE.TextureLoader();
 const textures = new Map();
 function getEarthTexture(mode) {
@@ -180,6 +217,16 @@ function loop(t) {
   orbit.update();
   cloudMesh.rotation.y += dt * 0.007;
   renderer.render(scene,camera);
+  positionHomeBeacon();
+  // Seamless near-surface detail: the free map continues the same Earth and
+  // coordinates instead of presenting a second globe selection panel.
+  if((current==='classic'||current==='enhanced')&&camera.position.length()<2.92){
+    const look=globePointCoordinates(camera.position);
+    if(Number.isFinite(look.lat)&&Number.isFinite(look.lon)){
+      updateCoordinates(look.lat,look.lon);
+      setMode('maplibre');
+    }
+  }
   frameCount++;
   if(t-period>=1300) {
     const fps=frameCount*1000/(t-period);
@@ -198,12 +245,11 @@ requestAnimationFrame(loop);
 
 function setActive(mode) {
   current=mode;
-  for(const button of document.querySelectorAll('.mode')) {
-    const active=button.dataset.mode===mode;
-    button.classList.toggle('active',active);
-    button.setAttribute('aria-pressed',String(active));
-  }
+  $('earth-provider').value = mode==='google3d'||mode==='maps'?'google':currentProvider;
+  $('google-choice').hidden = !['google3d','maps'].includes(mode);
+  if(mode==='google3d'||mode==='maps')$('google-visual').value=mode;
   $('planet-view').classList.toggle('hidden',mode!=='classic'&&mode!=='enhanced');
+  $('home-beacon').style.display=mode==='classic'||mode==='enhanced'?'':'none';
   $('google3d-view').classList.toggle('hidden',mode!=='google3d');
   $('maplibre-view').classList.toggle('hidden',mode!=='maplibre');
   $('maps-view').classList.toggle('hidden',mode!=='maps');
@@ -225,7 +271,7 @@ function setMode(mode) {
   }
   previous=current;
   setActive(mode);
-  if(mode==='classic'||mode==='enhanced')$('earth-preset').value=mode;
+  if(mode==='classic'||mode==='enhanced')currentProvider=mode;
   if(mode==='classic'||mode==='enhanced') {
     getEarthTexture(mode).then(tex=>{material.map=tex;material.needsUpdate=true;}).catch(()=>toast('Earth texture unavailable'));
     atmo.visible=showAtmosphere && mode==='enhanced';
@@ -235,12 +281,32 @@ function setMode(mode) {
   else if(mode==='google3d') connect3d().catch(error=>{console.error('Google 3D setup error',error.message);notice('Google 3D could not load. Check your billed API key, Map Tiles API permissions, referrer restrictions, quotas, and network connection.');setActive(previous);});
   else if(mode==='maps') connectMaps().catch(error=>{console.error('Google Maps setup error',error.message);notice('Google Maps could not load. Check your API key, Maps JavaScript API permissions, referrer restrictions and billing.');setActive(previous);});
 }
-for(const button of document.querySelectorAll('.mode')) button.addEventListener('click',()=>setMode(button.dataset.mode));
+// One Earth viewport and provider controls live in Settings, not separate globe buttons.
+$('earth-provider').addEventListener('change',e=>{
+  const source=e.target.value;
+  $('google-choice').hidden=source!=='google';
+  if(source==='google'){
+    if(!currentGoogleKey){
+      toast('Add a Google Maps key in Settings, or use the free MapLibre option.');
+      // The choice stays expanded; imagery changes only with an enabled key.
+      return;
+    }
+    setMode($('google-visual').value);
+  }else{
+    currentProvider=source;
+    localStorage.setItem('life-next-earth-provider',source);
+    setMode(source);
+  }
+});
+$('google-visual').addEventListener('change',e=>setMode(e.target.value));
 function openSettings(){$('settings').hidden=false;$('settings-btn').setAttribute('aria-expanded','true');}
 function closeSettings(){$('settings').hidden=true;$('settings-btn').setAttribute('aria-expanded','false');}
 $('settings-btn').onclick=()=> $('settings').hidden?openSettings():closeSettings();
 $('settings-close').onclick=closeSettings;
-$('earth-preset').onchange=e=>setMode(e.target.value);
+$('temperature-unit').value=getTemperatureUnit();
+$('temperature-unit').addEventListener('change',e=>setTemperatureUnit(e.target.value));
+$('show-weather').checked=getWeatherVisible();
+$('show-weather').addEventListener('change',e=>setWeatherVisible(e.target.checked));
 $('free-map-style').onchange=e=>{
   if(freeMap)freeMap.setStyle(freeMapStyles[e.target.value]);
 };
@@ -253,6 +319,7 @@ $('google-connect').onclick=()=>{
   if(!/^[A-Za-z0-9_-]{20,200}$/.test(key)) {toast('Enter a valid-looking Google Maps Platform key.');return;}
   currentGoogleKey=key;
   $('google-key').value='';
+  $('earth-provider').value='google';$('google-choice').hidden=false;
   closeSettings();
   toast('Key added to this tab only. Choose Google Earth 3D or Google Maps.');
 };
@@ -271,7 +338,8 @@ $('explore').onclick=()=>{
     const vector=spherePoint(lat,lon,1);
     const dir=new THREE.Vector3(vector.x,vector.y,vector.z);
     camera.position.copy(dir.multiplyScalar(3.3));orbit.target.set(0,0,0);orbit.update();
-    toast('High-detail city exploration requires the Google 3D mode, if available.',4900);
+    toast('Zooming toward this location; detailed streets use free MapLibre.',2800);
+    setTimeout(()=>{if(current==='classic'||current==='enhanced'){setMode('maplibre');}},650);
   }else if(current==='google3d'&&googleViewer){
     googleViewer.camera.flyTo({destination:window.Cesium.Cartesian3.fromDegrees(selected.lon,selected.lat,55000),duration:1.7});
   }else if(current==='maplibre'&&freeMap){freeMap.flyTo({center:[selected.lon,selected.lat],zoom:Math.max(12,freeMap.getZoom()),pitch:60,duration:1450});}
@@ -304,6 +372,7 @@ window.addEventListener('keydown',e=>{
 async function connectFreeMap() {
   if (!freeMapImport) freeMapImport = import('./free-map.js').then(module=>module.default);
   const maplibre = await freeMapImport;
+  maplibreMarkerConstructor=maplibre.Marker;
   if (current !== 'maplibre') return;
   if (!freeMap) {
     freeMap = new maplibre.Map({
@@ -330,26 +399,37 @@ async function connectFreeMap() {
     });
     freeMap.on('click', e => {
       updateCoordinates(e.lngLat.lat, e.lngLat.lng);
-      if (!freeMapMarker) freeMapMarker = new maplibre.Marker({color:'#84dcfa'});
-      freeMapMarker.setLngLat([selected.lon,selected.lat]).addTo(freeMap);
+      // Home beacon stays anchored to saved address instead of jumping on clicks.
     });
     freeMap.on('error', e => {
       // MapLibre keeps rendering other tiles when one request fails.
       if(e?.error)console.warn('Free map tile error:',e.error.message || String(e.error));
     });
+    freeMap.on('zoomend',()=>{
+      if(current==='maplibre'&&currentProvider!=='maplibre'&&freeMap.getZoom()<1.35){
+        const c=freeMap.getCenter();
+        updateCoordinates(c.lat,c.lng);
+        setMode(currentProvider);
+        const point=spherePoint(c.lat,c.lng,1);
+        camera.position.copy(new THREE.Vector3(point.x,point.y,point.z).multiplyScalar(8.2));
+        orbit.update();
+        toast('Returned to your selected NASA globe.');
+      }
+    });
     freeMap.on('moveend', () => {
       if (current !== 'maplibre') return;
       const center=freeMap.getCenter();
-      $('distance').textContent='MapLibre ? zoom '+freeMap.getZoom().toFixed(1);
+      $('distance').textContent='MapLibre | zoom '+freeMap.getZoom().toFixed(1);
       // The saved selection follows the moved center so the next mode can open
       // the area the visitor actually browsed.
-      if (!freeMapMarker)updateCoordinates(center.lat,center.lng);
+      updateCoordinates(center.lat,center.lng);
     });
-    freeMap.once('load',()=>freeMap.resize());
+    freeMap.once('load',()=>{freeMap.resize();renderHomeBeacon();});
   } else {
     freeMap.resize();
     freeMap.flyTo({center:[selected.lon,selected.lat],duration:900,zoom:Math.max(2,Math.min(11,freeMap.getZoom()))});
   }
+  renderHomeBeacon();
   toast('Free OpenStreetMap streets and buildings. Scroll or pinch to explore.');
 }
 
@@ -434,7 +514,119 @@ async function connectMaps(){
   }else{googleMap.setCenter({lat:selected.lat,lng:selected.lon});googleMap.setZoom(9);}
   toast('Google Maps satellite imagery is streamed from Google; attribution remains visible.');
 }
+// Address lookups are user-initiated only. The public Nominatim instance is
+// not an autocomplete service; do not issue continuous searches or scrape it.
+// Production high-volume installs should use a dedicated geocoder.
+function initHome(){
+ try{
+  const item=JSON.parse(localStorage.getItem('life-next-home-v1')||'null');
+  if(item && Number.isFinite(item.lat)&&Number.isFinite(item.lon) && typeof item.address==='string'){
+    home=item; $('home-address').value=item.address;
+  }
+ }catch{}
+ $('show-home-beacon').checked=localStorage.getItem('life-next-show-beacon')!=='false';
+ $('show-home-beacon').addEventListener('change',e=>{
+   localStorage.setItem('life-next-show-beacon',String(e.target.checked));
+   renderHomeBeacon();
+ });
+ $('save-address').addEventListener('click',saveAddress);
+ $('clear-address').addEventListener('click',()=>{
+   home=null;localStorage.removeItem('life-next-home-v1');$('home-address').value='';
+   renderHomeBeacon();toast('Saved location removed from this browser.');
+ });
+ renderHomeBeacon();
+}
+async function saveAddress(){
+ const address=$('home-address').value.trim();
+ if(address.length<3||address.length>180){toast('Enter an address or city.');return;}
+ const delay=1000-(Date.now()-lastGeocode);
+ if(delay>0)await new Promise(resolve=>setTimeout(resolve,delay));
+ lastGeocode=Date.now();
+ const btn=$('save-address');btn.disabled=true;btn.textContent='FINDING ADDRESS...';
+ try{
+  const url=new URL('https://nominatim.openstreetmap.org/search');
+  url.searchParams.set('q',address);
+  url.searchParams.set('format','jsonv2');url.searchParams.set('limit','1');
+  const response=await fetch(url.toString(),{headers:{Accept:'application/json'},referrerPolicy:'strict-origin-when-cross-origin'});
+  if(!response.ok)throw new Error('Address search HTTP '+response.status);
+  const list=await response.json();
+  if(!list.length)throw new Error('Address not found. Check spelling or include city/state.');
+  const lat=Number(list[0].lat),lon=Number(list[0].lon);
+  if(!Number.isFinite(lat)||!Number.isFinite(lon))throw new Error('Invalid map coordinates');
+  home={address,lat,lon};
+  localStorage.setItem('life-next-home-v1',JSON.stringify(home));
+  $('show-home-beacon').checked=true;
+  localStorage.setItem('life-next-show-beacon','true');
+  updateCoordinates(lat,lon,'Home Location');renderHomeBeacon();
+  if(current==='maplibre'&&freeMap)freeMap.flyTo({center:[lon,lat],zoom:12,duration:1350});
+  else if(current==='classic'||current==='enhanced'){
+    const point=spherePoint(lat,lon,1);
+    camera.position.copy(new THREE.Vector3(point.x,point.y,point.z).multiplyScalar(5.2));
+    orbit.update();
+  }
+  closeSettings();toast('Home beacon saved in this browser. Blue light enabled.');
+ }catch(err){toast(err.message,6000);}
+ finally{btn.disabled=false;btn.textContent='FIND & SAVE ADDRESS';}
+}
+function renderHomeBeacon(){
+ const visible=!!home&&$('show-home-beacon').checked;
+ $('home-beacon').hidden=!visible;
+ if(freeMap&&home&&maplibreMarkerConstructor){
+  if(!freeMapMarker){
+    const el=document.createElement('div');el.className='blue-map-beacon';
+    freeMapMarker=new (freeMapImportResolvedMarker())({element:el,anchor:'center'});
+  }
+  freeMapMarker.setLngLat([home.lon,home.lat]).addTo(freeMap);
+  freeMapMarker.getElement().hidden=!visible;
+ }
+}
+let maplibreMarkerConstructor=null;
+function freeMapImportResolvedMarker(){
+ if(!maplibreMarkerConstructor)throw new Error('MapLibre marker not ready');
+ return maplibreMarkerConstructor;
+}
+function positionHomeBeacon(){
+ if(!home||$('home-beacon').hidden||!(current==='classic'||current==='enhanced'))return;
+ const coord=spherePoint(home.lat,home.lon,RADIUS*1.012);
+ const pos=new THREE.Vector3(coord.x,coord.y,coord.z);
+ const isFront=pos.dot(camera.position)>RADIUS*RADIUS;
+ $('home-beacon').style.visibility=isFront?'visible':'hidden';
+ if(!isFront)return;
+ const ndc=pos.clone().project(camera);
+ $('home-beacon').style.left=((ndc.x+1)*.5*window.innerWidth)+'px';
+ $('home-beacon').style.top=((-ndc.y+1)*.5*window.innerHeight)+'px';
+}
+
 setActive('classic');
 setRenderQuality('auto');
+initHome();
+const remembered=localStorage.getItem('life-next-earth-provider');
+if(['classic','enhanced','maplibre'].includes(remembered)){
+ currentProvider=remembered;
+ if(remembered!=='classic')setMode(remembered);
+}
+$('earth-provider').value=currentProvider;
+cityIndex=Math.max(0,CITIES.findIndex(city=>city.name==='New York'));
+function visitCity(offset){
+ cityIndex=(cityIndex+offset+CITIES.length)%CITIES.length;
+ const c=CITIES[cityIndex];
+ updateCoordinates(c.lat,c.lon,c.name);
+ $('city-tour-position').textContent=(cityIndex+1)+' / '+CITIES.length;
+ if(current==='maplibre'&&freeMap)freeMap.flyTo({center:[c.lon,c.lat],zoom:7.8,duration:1200});
+ else if(current==='classic'||current==='enhanced'){
+   const point=spherePoint(c.lat,c.lon,1);
+   camera.position.copy(new THREE.Vector3(point.x,point.y,point.z).multiplyScalar(8.2));
+   orbit.update();
+ }
+}
+$('previous-city').addEventListener('click',()=>visitCity(-1));
+$('next-city').addEventListener('click',()=>visitCity(1));
+visitCity(0);
+if(home){
+  updateCoordinates(home.lat,home.lon,'Home Location');
+  const coord=spherePoint(home.lat,home.lon,1);
+  camera.position.copy(new THREE.Vector3(coord.x,coord.y,coord.z).multiplyScalar(7.2));
+  orbit.update();
+}
 const params=new URLSearchParams(location.search);
 if(params.get('lat')&&params.get('lon'))updateCoordinates(Number(params.get('lat')),Number(params.get('lon')));

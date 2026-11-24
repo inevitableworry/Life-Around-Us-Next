@@ -7,3 +7,4 @@ dist/
 *.pem
 *.p12
 *.key
+\n# Local QA-only screenshots with simulated addresses and old layouts\ndocs/unified-beacon-*-qa.png\ndocs/unified-life-*.png\n

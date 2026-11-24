@@ -2,15 +2,27 @@
 
 ![Life Around Us Next - browser preview of the 4K NASA Earth mode](docs/enhanced-earth-4k.png)
 
-**[Earth modes](#visual-modes) ? [Roadmap](ROADMAP.md) ? [Google tile usage](#google-maps-platform)**
+**[Earth sources](#visual-modes) | [Roadmap](ROADMAP.md) | [Google tile usage](#google-maps-platform)**
 
 An independent next-generation browser-based Earth renderer. This project is separate from the existing [Life Around Us](https://life.orosapp.us/) website, which is not modified.
+
+## One Earth experience
+
+The interface now follows the original **Life Around Us** presentation: a quiet header and original Life logo, the original-style city postcard, time and Open-Meteo weather, a three-day forecast, world city navigation, and a muted lower Earth information strip. **There is no separate globes list.** Switch imagery in the gear-shaped **Options / Settings / Earth imagery & map provider** selector. The Google choice expands into **Google Earth 3D** and **Google Satellite/Maps**; those remain optional and require the user's own enabled Maps API key.
+
+Choosing a NASA texture renders the globe at 2K or 4K. Zooming close to the surface transitions into free MapLibre streets and buildings **at the same geographic coordinates**. Zooming back out returns to the selected NASA globe; choosing MapLibre directly keeps its own globe-to-streets renderer active. All stages occupy the same Earth viewport, rather than opening extra map windows. Google is integrated into the same single-view Settings structure but its licensed live imagery still requires actual credentials and hardware testing.
+
+**Open-Meteo is retained:** the city card shows current temperature, matching WMO weather icons, humidity, wind, feels-like temperature, local date/time and a three-day forecast. The curated 132-city tour is imported from the previous Life app. Data is kept in a three-hour browser cache with a day of stale fallback and rate-limit backoff.
+
+**Opt-in address beacon:** Settings accepts a user-supplied street address or city. Pressing **Find & Save Address** makes one public OpenStreetMap Nominatim search (the address is shared with that service), centers Earth, and stores the matched address/coordinates only in this browser's local storage. The home location appears as a **bright, pulsing blue beacon** on NASA Earth and MapLibre. The beacon can be disabled or the saved address removed in Settings. This feature never reads a visitor's device location or commits addresses to GitHub. The public Nominatim server permits only limited, identified requests and no autocomplete; a higher-traffic production deployment should use an independently provisioned geocoding service. See [Nominatim usage policy](https://operations.osmfoundation.org/policies/nominatim/).
+
+![Life Around Us Next unified Earth view with its original-style city and weather interface](docs/unified-earth-desktop.png)
 
 ## Visual modes
 
 | Mode | Rendering | Current state |
 | --- | --- | --- |
-| Original | NASA Blue Marble 2K globe, WebGL | Implemented; not an exact copy of the original website UI |
+| Original | NASA Blue Marble 2K globe, WebGL | Implemented; classic Earth imagery within the unified Life interface |
 | Enhanced Earth | NASA Blue Marble 4K plus atmosphere, clouds and high-quality rendering | Implemented |
 | MapLibre Free | WebGL globe-to-streets, OpenFreeMap Liberty/Dark/Positron styles, OpenStreetMap roads and 3D building layers | Implemented, tested in browser, no key or billing |
 | Google Earth 3D | CesiumJS with Google Map Tiles API Photorealistic 3D Tiles | Key/billing required; real Google test pending |
@@ -23,9 +35,9 @@ The NASA image is a standard global equirectangular projection. Click a point to
 
 ![Free MapLibre navigation in the Life Around Us Next interface, showing the Hickory, North Carolina region](docs/maplibre-free-streets.png)
 
-Choose **MapLibre Free** in the visual mode selector. This loads [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/) only when opened, using free OpenStreetMap-derived vector tiles from [OpenFreeMap](https://openfreemap.org/). It uses the latitude and longitude selected on the NASA globe to center the map. Select any map location to save that position, then zoom, pinch, tilt, or drag to explore streets and 3D buildings where mapped data exists. **Global View** returns to a distant map projection.
+Choose **MapLibre** under Options / Settings / Earth imagery & map provider, or zoom toward a city from the NASA globe. This loads [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/) only when opened, using free OpenStreetMap-derived vector tiles from [OpenFreeMap](https://openfreemap.org/). It uses the latitude and longitude selected on the NASA globe to center the map. Select any map location to save that position, then zoom, pinch, tilt, or drag to explore streets and 3D buildings where mapped data exists. **Global View** returns to a distant map projection; zooming out far enough from a NASA-initiated close-up returns to NASA imagery.
 
-Settings offers Liberty, Dark, and Positron styles without a Google Maps API key, billing account, or credit card. OpenStreetMap and provider attribution stays visible. The free mode does not supply Google's proprietary satellite photography or photorealistic 3D buildings. No guarantee of zero-latency navigation or offline access is made; the public tile service may impose fair-use restrictions. For high-traffic use, independently host or contract an appropriate tile provider. The website does not scrape or archive public tiles.
+Settings also offers Liberty, Dark, and Positron styles without a Google Maps API key, billing account, or credit card. OpenStreetMap and provider attribution stays visible. The free mode does not supply Google's proprietary satellite photography or photorealistic 3D buildings. No guarantee of zero-latency navigation or offline access is made; the public tile service may impose fair-use restrictions. For high-traffic use, independently host or contract an appropriate tile provider. The website does not scrape or archive public tiles.
 
 ## Performance
 

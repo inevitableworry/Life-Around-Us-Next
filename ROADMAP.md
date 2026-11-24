@@ -14,6 +14,19 @@
 - [x] Explicit Vite MapLibre worker and lazy mode loading
 - [x] Browser-tested streets around Hickory NC, coordinates, zoom and attribution
 - [x] Free map style switcher: Liberty, Dark and Positron
+- [x] Removed competing left-side globe cards; one original-Life-style Earth scene and Settings provider selector
+- [x] NASA 2K/4K, MapLibre and optional Google grouped under one provider menu (Google has two nested choices)
+- [x] Original Life logo, smoked greeting, weather postcard and lower Earth information strip
+- [x] Restored the original 132-city world-tour dataset and navigation
+- [x] Open-Meteo current conditions, WMO icons, 3-day forecast, local clock and Celsius/Fahrenheit Settings
+- [x] Three-hour persistent weather cache, 24-hour stale fallback and HTTP 429 backoff
+- [x] Corrected Three.js sphere longitude mapping; unit-tested Greenwich, New York and Tokyo orientations
+- [x] One-viewport NASA globe to MapLibre near-surface detail and zoom-out return
+- [x] Optional saved street-address/city location, pulsing blue home beacon and remove option
+- [x] Browser-verified local address lookup, MapLibre marker and mobile/desktop weather UI
+- [ ] Scale Nominatim geocoding with own hosted provider/global throttle if public traffic grows
+- [ ] Restore news-headline ingestion and media/radio features from legacy Life; current lower strip displays verified live weather context only
+- [ ] Implement cross-provider transitions into *live Google imagery* once billing/API key is functional
 - [ ] Check production map-provider usage and quotas under higher traffic
 - [ ] Add separately licensed terrain DEM and hillshading to MapLibre
 - [ ] Test mobile pinch and 3D building views at higher zoom on physical devices

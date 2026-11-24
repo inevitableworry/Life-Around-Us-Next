@@ -15,27 +15,64 @@
  <section id="maplibre-view" class="viewport hidden" aria-label="MapLibre free interactive OpenStreetMap"></section>
  <section id="maps-view" class="viewport hidden" aria-label="Google satellite map"></section>
  <iframe id="legacy-view" title="Original Life Around Us" class="viewport hidden" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen"></iframe>
- <header class="glass header">
-   <div class="brand"><div class="globe-mark"></div><div><span class="overline">EARTH VISUALIZATION LABORATORY</span><h1>LIFE <span>AROUND US</span> <b>NEXT</b></h1></div></div>
-   <div class="header-right"><span id="fps">WEBGL READY</span><button id="settings-btn" aria-controls="settings" aria-expanded="false" aria-label="Display settings">⚙</button></div>
+ <header class="life-clinic" id="clinic">
+  <div class="clinic-mark" aria-hidden="true">L</div>
+  <div><div class="clinic-name">Life Around Us</div><div class="clinic-welcome">Welcome to Earth &#183; Next</div></div>
  </header>
- <nav class="glass modes" aria-label="Earth display mode">
-  <span class="overline modes-title">VISUAL MODES</span>
-  <button class="mode active" data-mode="classic" aria-pressed="true"><span class="mode-number">01</span><span><strong>Original</strong><small>NASA globe · 2K</small></span></button>
-  <button class="mode" data-mode="enhanced" aria-pressed="false"><span class="mode-number">02</span><span><strong>Enhanced Earth</strong><small>NASA 4K · atmosphere</small></span></button>
-  <button class="mode" data-mode="google3d" aria-pressed="false"><span class="mode-number">03</span><span><strong>Google Earth 3D</strong><small>Live licensed 3D tiles</small></span></button>
-  <button class="mode" data-mode="maplibre" aria-pressed="false"><span class="mode-number">04</span><span><strong>MapLibre Free</strong><small>Globe ? streets ? 3D buildings</small></span></button>
-  <button class="mode" data-mode="maps" aria-pressed="false"><span class="mode-number">05</span><span><strong>Google Maps</strong><small>Satellite and roads</small></span></button>
-  <button class="mode" data-mode="legacy" aria-pressed="false"><span class="mode-number">06</span><span><strong>Original Website</strong><small>Legacy Life Around Us</small></span></button>
- </nav>
- <section class="glass hud"><span class="overline">CURRENT LOCATION</span><strong id="location-name">PLANET EARTH</strong><span id="coordinates">0.000°, 0.000°</span><span id="distance">Orbital perspective</span></section>
- <div class="right-controls">
-  <div class="glass zoom"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button></div>
-  <div class="glass buttons"><button id="reset">GLOBAL VIEW</button><button id="explore">EXPLORE LOCATION</button></div>
+ <div class="life-brand"><img src="/life-logo.png" alt="Life Around Us"></div>
+ <button class="life-gear" id="settings-btn" aria-controls="settings" aria-expanded="false" aria-label="Options and Settings" title="Options">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L4.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
+ </button>
+ <section class="life-city-card" id="city-card" aria-live="polite">
+  <div class="card-band"></div><div class="card-body">
+   <div class="country" id="city-country">EARTH EXPLORATION</div>
+   <h1 class="city" id="location-name">Planet Earth</h1>
+   <div class="time-row"><span class="time" id="city-time">--:--</span><span class="ampm" id="city-ampm"></span></div>
+   <div class="date" id="city-date"></div>
+   <div class="divider"></div>
+   <div class="weather" id="weather"><span class="wx-icon" id="weather-icon" aria-hidden="true"></span><span class="wx-temp" id="weather-temp">--</span><span class="wx-text" id="weather-description">Open-Meteo weather</span></div>
+   <div class="weather-meta" id="weather-details">Select a city or set an address in Settings</div>
+   <div class="weather-days" id="weather-days"></div>
+  </div>
+ </section>
+ <div class="life-home-beacon" id="home-beacon" hidden aria-label="Saved home location"><span class="beacon-pulse"></span><span id="beacon-label">HOME</span></div>
+ <div class="city-tour" aria-label="City navigation"><button id="previous-city" title="Previous city" aria-label="Previous city">&#8249;</button><span id="city-tour-position">WORLD TOUR</span><button id="next-city" title="Next city" aria-label="Next city">&#8250;</button></div>
+ <section class="life-news-strip" id="news-strip" aria-label="Live Earth information">
+  <div class="news-photo" aria-hidden="true"><img src="/favicon.svg" alt=""></div>
+  <div class="news-lines"><div class="news-item"><span class="news-dot"></span><span id="headline-one">Live Earth &#183; Select anywhere on the globe</span></div><div class="news-item"><span class="news-dot"></span><span id="headline-two">Weather observations and forecast provided by Open-Meteo</span></div><div class="news-item"><span class="news-dot"></span><span id="headline-three">Use Settings to choose NASA, MapLibre or Google imagery</span></div></div>
+ </section>
+ <span id="fps" class="life-fps" aria-label="Rendering performance"></span>
+ <span id="coordinates" class="life-coordinates">0.0000&#176;, 0.0000&#176;</span>
+ <span id="distance" class="life-distance">Orbital perspective</span>
+ <div class="life-controls">
+  <button id="zoom-in" title="Zoom in" aria-label="Zoom in">+</button>
+  <button id="zoom-out" title="Zoom out" aria-label="Zoom out">&#8722;</button>
+  <button id="reset" title="Return to Earth">GLOBAL VIEW</button>
+  <button id="explore" title="Zoom toward selected point">EXPLORE</button>
  </div>
  <aside id="settings" class="glass settings" hidden aria-labelledby="settings-title">
-  <div class="settings-head"><h2 id="settings-title">VISUAL SETTINGS</h2><button id="settings-close" aria-label="Close settings">×</button></div>
-  <label for="earth-preset">Earth texture preset</label><select id="earth-preset"><option value="classic">Original 2K</option><option value="enhanced">Enhanced 4K NASA terrain + bathymetry</option></select>
+  <div class="settings-head"><h2 id="settings-title">OPTIONS &#183; SETTINGS</h2><button id="settings-close" aria-label="Close settings">&#215;</button></div>
+  <label for="earth-provider">Earth imagery & map provider</label>
+  <select id="earth-provider" aria-label="Earth provider">
+   <option value="classic">Original Earth &#183; NASA 2K</option>
+   <option value="enhanced">Enhanced Earth &#183; NASA 4K</option>
+   <option value="maplibre">MapLibre &#183; Free roads and buildings</option>
+   <option value="google">Google ? Maps Platform (optional)</option>
+  </select>
+  <div id="google-choice" hidden>
+   <label for="google-visual">Google imagery</label><select id="google-visual"><option value="google3d">Google Earth 3D</option><option value="maps">Google Satellite / Maps</option></select>
+  </div>
+  <p id="provider-description">One Earth experience. Choose a source, then zoom through to locations. Google requires an enabled billing account.</p>
+  <div class="location-setting">
+    <label for="home-address">Your location ? Home beacon</label>
+    <input type="text" id="home-address" placeholder="Enter an address or city" autocomplete="street-address" maxlength="180">
+    <div class="setting-toggle"><span>Show pulsing blue beacon</span><input type="checkbox" id="show-home-beacon" checked></div>
+    <button id="save-address" class="action">FIND & SAVE ADDRESS</button>
+    <button id="clear-address" class="action secondary-action">REMOVE SAVED LOCATION</button>
+    <p>Your search is sent to OpenStreetMap Nominatim only after you press Find; no automatic address tracking. The saved location stays in this browser, not GitHub. The blue beacon pulses on the globe and maps. Remove it anytime. Public geocoding has usage limits.</p>
+  </div>
+  <label for="temperature-unit">Weather temperature</label><select id="temperature-unit"><option value="celsius">Celsius (?C)</option><option value="fahrenheit">Fahrenheit (?F)</option></select>
+  <div class="setting-toggle"><span>Show city weather & forecast</span><input type="checkbox" id="show-weather" checked></div>
   <label for="free-map-style">MapLibre map appearance</label><select id="free-map-style"><option value="liberty">Liberty ? Streets and buildings</option><option value="dark">Dark ? Nighttime streets</option><option value="positron">Positron ? Clean atlas</option></select>
   <p>Free street and building data from OpenFreeMap and OpenStreetMap; not Google satellite photography. Map data loads on demand, and OpenStreetMap attribution stays visible.</p>
   <label for="quality">Render resolution</label><select id="quality"><option value="auto">Adaptive (recommended)</option><option value="balanced">Balanced / 1080p</option><option value="max">Maximum quality / 4K display</option></select>
