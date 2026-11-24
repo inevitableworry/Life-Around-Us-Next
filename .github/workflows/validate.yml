@@ -1,0 +1,26 @@
+name: Validate web preview
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Guard against checked-in API keys
+        shell: bash
+        run: |
+          if git grep -nE 'AIza[0-9A-Za-z_-]{32,}' -- ':!package-lock.json'; then
+            echo 'API key accidentally committed'; exit 1
+          fi

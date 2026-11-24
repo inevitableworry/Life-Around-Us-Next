@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061126">
+<title>Life Around Us: Next | Modern Earth</title>
+<meta name="description" content="An experimental next-generation Earth visualization with NASA 4K imagery and optional Google Maps Platform modes.">
+</head>
+<body>
+<div id="app">
+ <section id="planet-view" class="viewport" aria-label="Interactive WebGL Earth"></section>
+ <section id="google3d-view" class="viewport hidden" aria-label="Google photorealistic 3D Earth"></section>
+ <section id="maps-view" class="viewport hidden" aria-label="Google satellite map"></section>
+ <iframe id="legacy-view" title="Original Life Around Us" class="viewport hidden" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen"></iframe>
+ <header class="glass header">
+   <div class="brand"><div class="globe-mark"></div><div><span class="overline">EARTH VISUALIZATION LABORATORY</span><h1>LIFE <span>AROUND US</span> <b>NEXT</b></h1></div></div>
+   <div class="header-right"><span id="fps">WEBGL READY</span><button id="settings-btn" aria-controls="settings" aria-expanded="false" aria-label="Display settings">⚙</button></div>
+ </header>
+ <nav class="glass modes" aria-label="Earth display mode">
+  <span class="overline modes-title">VISUAL MODES</span>
+  <button class="mode active" data-mode="classic" aria-pressed="true"><span class="mode-number">01</span><span><strong>Original</strong><small>NASA globe · 2K</small></span></button>
+  <button class="mode" data-mode="enhanced" aria-pressed="false"><span class="mode-number">02</span><span><strong>Enhanced Earth</strong><small>NASA 4K · atmosphere</small></span></button>
+  <button class="mode" data-mode="google3d" aria-pressed="false"><span class="mode-number">03</span><span><strong>Google Earth 3D</strong><small>Live licensed 3D tiles</small></span></button>
+  <button class="mode" data-mode="maps" aria-pressed="false"><span class="mode-number">04</span><span><strong>Google Maps</strong><small>Satellite and roads</small></span></button>
+  <button class="mode" data-mode="legacy" aria-pressed="false"><span class="mode-number">05</span><span><strong>Original Website</strong><small>Legacy Life Around Us</small></span></button>
+ </nav>
+ <section class="glass hud"><span class="overline">CURRENT LOCATION</span><strong id="location-name">PLANET EARTH</strong><span id="coordinates">0.000°, 0.000°</span><span id="distance">Orbital perspective</span></section>
+ <div class="right-controls">
+  <div class="glass zoom"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button></div>
+  <div class="glass buttons"><button id="reset">GLOBAL VIEW</button><button id="explore">EXPLORE LOCATION</button></div>
+ </div>
+ <aside id="settings" class="glass settings" hidden aria-labelledby="settings-title">
+  <div class="settings-head"><h2 id="settings-title">VISUAL SETTINGS</h2><button id="settings-close" aria-label="Close settings">×</button></div>
+  <label for="earth-preset">Earth texture preset</label><select id="earth-preset"><option value="classic">Original 2K</option><option value="enhanced">Enhanced 4K NASA terrain + bathymetry</option></select>
+  <label for="quality">Render resolution</label><select id="quality"><option value="auto">Adaptive (recommended)</option><option value="balanced">Balanced / 1080p</option><option value="max">Maximum quality / 4K display</option></select>
+  <p>4K Earth textures are independent of display resolution. This browser uses WebGL/WebGPU-style optimizations, not NVIDIA DLSS.</p>
+  <div class="setting-toggle"><span>Auto-rotate globe</span><input id="spin" type="checkbox" checked></div>
+  <div class="setting-toggle"><span>Cloud layer</span><input id="clouds" type="checkbox" checked></div>
+  <div class="setting-toggle"><span>Atmosphere</span><input id="atmo" type="checkbox" checked></div>
+  <hr>
+  <label for="google-key">Google Maps Platform API key</label>
+  <input id="google-key" type="password" placeholder="Browser-restricted key" autocomplete="off" spellcheck="false">
+  <p>Google modes require a billing-enabled Google Cloud project and Map Tiles API / Maps JavaScript API enabled. Your key remains in memory only for this tab; Google requests necessarily include it. Configure website-referrer restrictions and quotas in Google Cloud. Google attributions stay visible.</p>
+  <button id="google-connect" class="action">CONNECT GOOGLE</button>
+  <hr><p>NASA Blue Marble: Next Generation imagery is equirectangular and georeferenced. Google imagery is not downloaded, scraped, upscaled, or cached by this project.</p>
+ </aside>
+ <div id="notice" class="glass notice" role="status" hidden></div>
+ <div id="toast" role="status" aria-live="polite"></div>
+ <footer id="credits">NASA Earth Observatory — Blue Marble: Next Generation. Independent experimental project; not affiliated with Google, Sony, or NVIDIA. <a href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/" target="_blank" rel="noopener">Data credits</a></footer>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body></html>
