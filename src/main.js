@@ -4,12 +4,14 @@ import './style.css';
 import {spherePoint,globePointCoordinates,normalizeLongitude} from './geodesy.js';
 
 const $ = (id) => document.getElementById(id);
-const MODE = { classic: 'classic', enhanced: 'enhanced', google3d: 'google3d', maps: 'maps' };
+const MODE = { classic: 'classic', enhanced: 'enhanced', maplibre: 'maplibre', google3d: 'google3d', maps: 'maps' };
 const RADIUS = 2.2;
 let current = 'classic', previous = 'classic';
 let currentGoogleKey = '';
 let selected = {lat: 0, lon: 0};
 let googleViewer = null, googleMap = null, googleScript = null, mapsScript = null;
+let freeMap = null, freeMapImport = null, freeMapMarker = null;
+const freeMapStyles = Object.freeze({liberty:'https://tiles.openfreemap.org/styles/liberty',dark:'https://tiles.openfreemap.org/styles/dark',positron:'https://tiles.openfreemap.org/styles/positron'});
 let autoRotate = true, showClouds = true, showAtmosphere = true, quality = 'auto';
 let lastMessageTimer = null;
 
@@ -203,6 +205,7 @@ function setActive(mode) {
   }
   $('planet-view').classList.toggle('hidden',mode!=='classic'&&mode!=='enhanced');
   $('google3d-view').classList.toggle('hidden',mode!=='google3d');
+  $('maplibre-view').classList.toggle('hidden',mode!=='maplibre');
   $('maps-view').classList.toggle('hidden',mode!=='maps');
   $('legacy-view').classList.add('hidden');
   $('fps').style.display = mode==='classic'||mode==='enhanced' ? '' : 'none';
@@ -228,7 +231,8 @@ function setMode(mode) {
     atmo.visible=showAtmosphere && mode==='enhanced';
     cloudMesh.visible=showClouds;
     orbit.autoRotate=autoRotate;
-  } else if(mode==='google3d') connect3d().catch(error=>{console.error('Google 3D setup error',error.message);notice('Google 3D could not load. Check your billed API key, Map Tiles API permissions, referrer restrictions, quotas, and network connection.');setActive(previous);});
+  } else if(mode==='maplibre') connectFreeMap().catch(error=>{console.error('MapLibre error:',error.message);notice('MapLibre could not load the free map tiles. Check the network connection and try again.');setActive(previous);});
+  else if(mode==='google3d') connect3d().catch(error=>{console.error('Google 3D setup error',error.message);notice('Google 3D could not load. Check your billed API key, Map Tiles API permissions, referrer restrictions, quotas, and network connection.');setActive(previous);});
   else if(mode==='maps') connectMaps().catch(error=>{console.error('Google Maps setup error',error.message);notice('Google Maps could not load. Check your API key, Maps JavaScript API permissions, referrer restrictions and billing.');setActive(previous);});
 }
 for(const button of document.querySelectorAll('.mode')) button.addEventListener('click',()=>setMode(button.dataset.mode));
@@ -237,6 +241,9 @@ function closeSettings(){$('settings').hidden=true;$('settings-btn').setAttribut
 $('settings-btn').onclick=()=> $('settings').hidden?openSettings():closeSettings();
 $('settings-close').onclick=closeSettings;
 $('earth-preset').onchange=e=>setMode(e.target.value);
+$('free-map-style').onchange=e=>{
+  if(freeMap)freeMap.setStyle(freeMapStyles[e.target.value]);
+};
 $('quality').onchange=e=>setRenderQuality(e.target.value);
 $('spin').onchange=e=>{autoRotate=e.target.checked;};
 $('clouds').onchange=e=>{showClouds=e.target.checked;cloudMesh.visible=showClouds;};
@@ -254,7 +261,8 @@ function gotoGlobal() {
     camera.position.set(0,0.8,8.2);orbit.target.set(0,0,0);orbit.update();
   }else if(current==='google3d'&&googleViewer){
     googleViewer.camera.flyTo({destination:window.Cesium.Cartesian3.fromDegrees(0,20,18000000),duration:1.6});
-  }else if(current==='maps'&&googleMap){googleMap.setCenter({lat:20,lng:0});googleMap.setZoom(2);}
+  }else if(current==='maplibre'&&freeMap){freeMap.flyTo({center:[0,20],zoom:1.4,pitch:0,duration:1300});}
+  else if(current==='maps'&&googleMap){googleMap.setCenter({lat:20,lng:0});googleMap.setZoom(2);}
 }
 $('reset').onclick=gotoGlobal;
 $('explore').onclick=()=>{
@@ -266,7 +274,8 @@ $('explore').onclick=()=>{
     toast('High-detail city exploration requires the Google 3D mode, if available.',4900);
   }else if(current==='google3d'&&googleViewer){
     googleViewer.camera.flyTo({destination:window.Cesium.Cartesian3.fromDegrees(selected.lon,selected.lat,55000),duration:1.7});
-  }else if(current==='maps'&&googleMap){googleMap.setCenter({lat:selected.lat,lng:selected.lon});googleMap.setZoom(11);}
+  }else if(current==='maplibre'&&freeMap){freeMap.flyTo({center:[selected.lon,selected.lat],zoom:Math.max(12,freeMap.getZoom()),pitch:60,duration:1450});}
+  else if(current==='maps'&&googleMap){googleMap.setCenter({lat:selected.lat,lng:selected.lon});googleMap.setZoom(11);}
 };
 function zoom(direction){
   if(current==='classic'||current==='enhanced') {
@@ -277,7 +286,8 @@ function zoom(direction){
     const C=window.Cesium; const c=googleViewer.camera;
     c.moveForward((direction>0?1:-1)*Math.max(100,c.positionCartographic.height*0.18));
     googleViewer.scene.requestRender();
-  }else if(current==='maps'&&googleMap) googleMap.setZoom(googleMap.getZoom()+(direction>0?1:-1));
+  }else if(current==='maplibre'&&freeMap){freeMap.zoomTo(Math.max(0,Math.min(19,freeMap.getZoom()+(direction>0?1:-1))),{duration:400});}
+  else if(current==='maps'&&googleMap) googleMap.setZoom(googleMap.getZoom()+(direction>0?1:-1));
 }
 $('zoom-in').onclick=()=>zoom(1);
 $('zoom-out').onclick=()=>zoom(-1);
@@ -287,6 +297,61 @@ window.addEventListener('keydown',e=>{
   if(e.key==='+'||e.key==='=')zoom(1);
   if(e.key==='-')zoom(-1);
 });
+
+// The free map renderer is loaded only when the visitor chooses MapLibre.
+// Uses OpenFreeMap's OpenStreetMap-derived Liberty/Dark/Positron styles.
+// No Google API key, billing, proxy or tile scraping. Attribution is always visible.
+async function connectFreeMap() {
+  if (!freeMapImport) freeMapImport = import('./free-map.js').then(module=>module.default);
+  const maplibre = await freeMapImport;
+  if (current !== 'maplibre') return;
+  if (!freeMap) {
+    freeMap = new maplibre.Map({
+      container: 'maplibre-view',
+      style: freeMapStyles[$('free-map-style').value],
+      center: [selected.lon, selected.lat],
+      zoom: Math.abs(selected.lat) > 0.01 || Math.abs(selected.lon)>0.01 ? 8.5 : 1.6,
+      pitch: 45,
+      maxPitch: 75,
+      minZoom: 0,
+      maxZoom: 19,
+      attributionControl: false,
+      antialias: true,
+      cooperativeGestures: false,
+      maxTileCacheSize: 120,
+      fadeDuration: 150
+    });
+    freeMap.addControl(new maplibre.AttributionControl({compact:false}), 'bottom-left');
+    freeMap.on('style.load', () => {
+      // A globe at low zoom turns naturally into usable street-level tiles.
+      // The style swap resets projection, so reapply it every time.
+      try { freeMap.setProjection({type:'globe'}); }
+      catch (err) { console.warn('Globe projection unavailable; map remains usable.',err.message); }
+    });
+    freeMap.on('click', e => {
+      updateCoordinates(e.lngLat.lat, e.lngLat.lng);
+      if (!freeMapMarker) freeMapMarker = new maplibre.Marker({color:'#84dcfa'});
+      freeMapMarker.setLngLat([selected.lon,selected.lat]).addTo(freeMap);
+    });
+    freeMap.on('error', e => {
+      // MapLibre keeps rendering other tiles when one request fails.
+      if(e?.error)console.warn('Free map tile error:',e.error.message || String(e.error));
+    });
+    freeMap.on('moveend', () => {
+      if (current !== 'maplibre') return;
+      const center=freeMap.getCenter();
+      $('distance').textContent='MapLibre ? zoom '+freeMap.getZoom().toFixed(1);
+      // The saved selection follows the moved center so the next mode can open
+      // the area the visitor actually browsed.
+      if (!freeMapMarker)updateCoordinates(center.lat,center.lng);
+    });
+    freeMap.once('load',()=>freeMap.resize());
+  } else {
+    freeMap.resize();
+    freeMap.flyTo({center:[selected.lon,selected.lat],duration:900,zoom:Math.max(2,Math.min(11,freeMap.getZoom()))});
+  }
+  toast('Free OpenStreetMap streets and buildings. Scroll or pinch to explore.');
+}
 
 // Third-party SDKs load only when the user deliberately enables Google modes.
 // No Google tiles are stored by this app. Cesium displays per-tile credits.

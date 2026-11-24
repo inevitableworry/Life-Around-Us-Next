@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#061126">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <title>Life Around Us: Next | Modern Earth</title>
 <meta name="description" content="An experimental next-generation Earth visualization with NASA 4K imagery and optional Google Maps Platform modes.">
 </head>
@@ -11,6 +12,7 @@
 <div id="app">
  <section id="planet-view" class="viewport" aria-label="Interactive WebGL Earth"></section>
  <section id="google3d-view" class="viewport hidden" aria-label="Google photorealistic 3D Earth"></section>
+ <section id="maplibre-view" class="viewport hidden" aria-label="MapLibre free interactive OpenStreetMap"></section>
  <section id="maps-view" class="viewport hidden" aria-label="Google satellite map"></section>
  <iframe id="legacy-view" title="Original Life Around Us" class="viewport hidden" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen"></iframe>
  <header class="glass header">
@@ -22,8 +24,9 @@
   <button class="mode active" data-mode="classic" aria-pressed="true"><span class="mode-number">01</span><span><strong>Original</strong><small>NASA globe · 2K</small></span></button>
   <button class="mode" data-mode="enhanced" aria-pressed="false"><span class="mode-number">02</span><span><strong>Enhanced Earth</strong><small>NASA 4K · atmosphere</small></span></button>
   <button class="mode" data-mode="google3d" aria-pressed="false"><span class="mode-number">03</span><span><strong>Google Earth 3D</strong><small>Live licensed 3D tiles</small></span></button>
-  <button class="mode" data-mode="maps" aria-pressed="false"><span class="mode-number">04</span><span><strong>Google Maps</strong><small>Satellite and roads</small></span></button>
-  <button class="mode" data-mode="legacy" aria-pressed="false"><span class="mode-number">05</span><span><strong>Original Website</strong><small>Legacy Life Around Us</small></span></button>
+  <button class="mode" data-mode="maplibre" aria-pressed="false"><span class="mode-number">04</span><span><strong>MapLibre Free</strong><small>Globe ? streets ? 3D buildings</small></span></button>
+  <button class="mode" data-mode="maps" aria-pressed="false"><span class="mode-number">05</span><span><strong>Google Maps</strong><small>Satellite and roads</small></span></button>
+  <button class="mode" data-mode="legacy" aria-pressed="false"><span class="mode-number">06</span><span><strong>Original Website</strong><small>Legacy Life Around Us</small></span></button>
  </nav>
  <section class="glass hud"><span class="overline">CURRENT LOCATION</span><strong id="location-name">PLANET EARTH</strong><span id="coordinates">0.000°, 0.000°</span><span id="distance">Orbital perspective</span></section>
  <div class="right-controls">
@@ -33,6 +36,8 @@
  <aside id="settings" class="glass settings" hidden aria-labelledby="settings-title">
   <div class="settings-head"><h2 id="settings-title">VISUAL SETTINGS</h2><button id="settings-close" aria-label="Close settings">×</button></div>
   <label for="earth-preset">Earth texture preset</label><select id="earth-preset"><option value="classic">Original 2K</option><option value="enhanced">Enhanced 4K NASA terrain + bathymetry</option></select>
+  <label for="free-map-style">MapLibre map appearance</label><select id="free-map-style"><option value="liberty">Liberty ? Streets and buildings</option><option value="dark">Dark ? Nighttime streets</option><option value="positron">Positron ? Clean atlas</option></select>
+  <p>Free street and building data from OpenFreeMap and OpenStreetMap; not Google satellite photography. Map data loads on demand, and OpenStreetMap attribution stays visible.</p>
   <label for="quality">Render resolution</label><select id="quality"><option value="auto">Adaptive (recommended)</option><option value="balanced">Balanced / 1080p</option><option value="max">Maximum quality / 4K display</option></select>
   <p>4K Earth textures are independent of display resolution. This browser uses WebGL/WebGPU-style optimizations, not NVIDIA DLSS.</p>
   <div class="setting-toggle"><span>Auto-rotate globe</span><input id="spin" type="checkbox" checked></div>

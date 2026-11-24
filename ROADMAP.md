@@ -10,6 +10,13 @@
 - [x] Google Maps hybrid/satellite web integration scaffold
 - [x] API key stored only in current browser tab memory
 - [x] Separate Cloudflare-compatible static web build configuration
+- [x] MapLibre GL JS v6 free mode with OpenFreeMap Liberty streets, mapped 3D buildings and globe projection
+- [x] Explicit Vite MapLibre worker and lazy mode loading
+- [x] Browser-tested streets around Hickory NC, coordinates, zoom and attribution
+- [x] Free map style switcher: Liberty, Dark and Positron
+- [ ] Check production map-provider usage and quotas under higher traffic
+- [ ] Add separately licensed terrain DEM and hillshading to MapLibre
+- [ ] Test mobile pinch and 3D building views at higher zoom on physical devices
 - [ ] Test with a real enabled Google API key, billing, and domain referrer permissions
 - [ ] Validate Google attribution visibility in each supported browser and all loaded tiles
 - [ ] Add licensed 3D elevation and global tile LOD with no unauthorized content

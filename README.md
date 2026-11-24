@@ -12,11 +12,20 @@ An independent next-generation browser-based Earth renderer. This project is sep
 | --- | --- | --- |
 | Original | NASA Blue Marble 2K globe, WebGL | Implemented; not an exact copy of the original website UI |
 | Enhanced Earth | NASA Blue Marble 4K plus atmosphere, clouds and high-quality rendering | Implemented |
+| MapLibre Free | WebGL globe-to-streets, OpenFreeMap Liberty/Dark/Positron styles, OpenStreetMap roads and 3D building layers | Implemented, tested in browser, no key or billing |
 | Google Earth 3D | CesiumJS with Google Map Tiles API Photorealistic 3D Tiles | Key/billing required; real Google test pending |
 | Google Maps | Maps JavaScript API hybrid satellite/road map | Key/billing required; real Google test pending |
 | Original Website | Open the separate live original in a new browser tab | Implemented |
 
 The NASA image is a standard global equirectangular projection. Click a point to obtain longitude and latitude, then switch modes using those same coordinates. Google Earth provides native geodetic coordinates and physically streamed 3D geometry; Google imagery is **never extracted, upscaled, or baked into another Earth texture**.
+
+## Free MapLibre navigation
+
+![Free MapLibre navigation in the Life Around Us Next interface, showing the Hickory, North Carolina region](docs/maplibre-free-streets.png)
+
+Choose **MapLibre Free** in the visual mode selector. This loads [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/) only when opened, using free OpenStreetMap-derived vector tiles from [OpenFreeMap](https://openfreemap.org/). It uses the latitude and longitude selected on the NASA globe to center the map. Select any map location to save that position, then zoom, pinch, tilt, or drag to explore streets and 3D buildings where mapped data exists. **Global View** returns to a distant map projection.
+
+Settings offers Liberty, Dark, and Positron styles without a Google Maps API key, billing account, or credit card. OpenStreetMap and provider attribution stays visible. The free mode does not supply Google's proprietary satellite photography or photorealistic 3D buildings. No guarantee of zero-latency navigation or offline access is made; the public tile service may impose fair-use restrictions. For high-traffic use, independently host or contract an appropriate tile provider. The website does not scrape or archive public tiles.
 
 ## Performance
 
